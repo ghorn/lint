@@ -1,0 +1,48 @@
+load("//rule:cc.bzl", "linted_cc_library")
+
+cc_dep_cpp = """\
+#include "test/testing_cc_dep.hpp"
+
+int yolo(int x) {
+  return 21*x;
+}
+"""
+
+cc_dep_hpp = """\
+#pragma once
+
+int yolo(int x);
+"""
+
+genrule(
+    name = "generate_c_dependencies",
+    outs = [
+        "testing_cc_dep.cpp",
+        "testing_cc_dep.hpp",
+    ],
+    cmd = """\
+echo '{}' > $(RULEDIR)/testing_cc_dep.cpp
+echo '{}' > $(RULEDIR)/testing_cc_dep.hpp
+""".format(cc_dep_cpp, cc_dep_hpp),
+)
+
+cc_library(
+    name = "cc_test_deps",
+    srcs = [
+        "testing_cc_dep.cpp",
+    ],
+    hdrs = [
+        "testing_cc_dep.hpp",
+    ],
+)
+
+cc_binary(
+    name = "cc_test",
+    srcs = [
+        "test.cpp",
+    ],
+    deps = [
+        ":cc_test_deps"
+    ],
+    visibility = ["//visibility:public"],
+)
